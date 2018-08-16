@@ -1,7 +1,6 @@
 #pragma once
 #include <iostream>
 #include <discord_rpc.h>
-#include <vector>
 
 struct Config {
 	std::string app_id, details, state, largeImage, smallImage;
