@@ -2,7 +2,6 @@
 #include <iostream>
 #include <discord_rpc.h>
 #include <vector>
-#include <unordered_map>
 
 struct Config {
 	std::string app_id, details, state, largeImage, smallImage;
