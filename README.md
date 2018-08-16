@@ -1,2 +1,2 @@
-#discord-rpc-cpp
+# discord-rpc-cpp
 bad code
