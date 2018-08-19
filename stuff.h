@@ -4,6 +4,8 @@
 
 struct Config {
 	std::string app_id, details, state, largeImage, smallImage;
+	bool elapsedTimeEnabled;
+	int remainingTime;
 };
 
 class DiscordShit {
@@ -18,5 +20,7 @@ private:
 
 Config readConfig(const char* fileName);
 void recreateConfig(const char* fileName);
+
+int64_t getCurrentTime();
 
 void bailOut();

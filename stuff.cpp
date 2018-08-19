@@ -9,9 +9,17 @@
 
 // TODO: fix this mess
 
+int64_t getCurrentTime() {
+	int64_t currentTime = std::chrono::duration_cast<std::chrono::seconds>(
+		std::chrono::system_clock::now().time_since_epoch()
+	).count();
+	return currentTime;
+}
+
 void bailOut() {
 	std::this_thread::sleep_for(std::chrono::seconds(20));
 	printf("\ni'm outta here!");
+	Discord_Shutdown();
 	terminate();
 }
 
@@ -31,6 +39,14 @@ void DiscordShit::UpdatePresence(Config conf) {
 	discordPresence.state = conf.state.c_str();
 	discordPresence.largeImageKey = conf.largeImage.c_str();
 	discordPresence.smallImageKey = conf.smallImage.c_str();
+
+	if (conf.elapsedTimeEnabled || conf.remainingTime) {
+		int64_t currentTime = getCurrentTime(); 
+		
+		discordPresence.startTimestamp = currentTime;
+		if (conf.remainingTime) discordPresence.endTimestamp = currentTime + conf.remainingTime;
+	}
+
 	sprintf(buffer, "%s", conf.details.c_str());
 	discordPresence.details = buffer;
 	discordPresence.instance = 1;
@@ -42,7 +58,7 @@ void recreateConfig(const char* fileName) {
 	printf("failed to open config file, making a new one...\n");
 	FILE* file = fopen(fileName, "wb");
 
-	docTemp.Parse("{\"app_id\":\"407579153060331521\",\"details\":\"test\",\"state\":\"test\",\"largeImage\":\"cmus\",\"smallImage\":\"paused\"}");
+	docTemp.Parse("{\"app_id\":\"407579153060331521\",\"details\":\"test\",\"state\":\"test\",\"largeImage\":\"cmus\",\"smallImage\":\"paused\",\"elapsedTimeEnabled\":true,\"remainingTime\":30}");
 
 	char writeBuffer[65536];
 	rapidjson::FileWriteStream writeStream(file, writeBuffer, sizeof(writeBuffer));
@@ -69,11 +85,14 @@ Config readConfig(const char* fileName) { // TODO: definitely fix this mess
 	fclose(file);
 
 	if (!doc.IsObject()) { printf("malformed json! please fix before running again\nsleeping for 20 seconds..."); bailOut(); }
+
 	Config conf;
 	conf.app_id = doc["app_id"].GetString();
 	conf.details = doc["details"].GetString();
 	conf.state = doc["state"].GetString();
 	conf.largeImage = doc["largeImage"].GetString();
 	conf.smallImage = doc["smallImage"].GetString();
+	conf.elapsedTimeEnabled = doc["elapsedTimeEnabled"].GetBool();
+	conf.remainingTime = doc["remainingTime"].GetInt64();
 	return conf;
 }
