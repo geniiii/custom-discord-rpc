@@ -1,7 +1,10 @@
 #pragma warning(disable:4996) // god damn it vc++
+
 #include "stuff.h"
+
 #include <chrono>
 #include <thread>
+
 #include <rapidjson/document.h>
 #include <rapidjson/filewritestream.h>
 #include <rapidjson/filereadstream.h>
@@ -9,51 +12,57 @@
 
 // TODO: fix this mess
 
-int64_t getCurrentTime() {
+inline int64_t getCurrentTime() {
 	int64_t currentTime = std::chrono::duration_cast<std::chrono::seconds>(
 		std::chrono::system_clock::now().time_since_epoch()
 	).count();
 	return currentTime;
 }
 
-void bailOut() {
+inline void bailOut() {
 	std::this_thread::sleep_for(std::chrono::seconds(20));
 	printf("\ni'm outta here!");
+
 	Discord_Shutdown();
 	terminate();
 }
 
-void DiscordShit::InitDiscord(std::string app_id) {
+void DiscordShit::InitDiscord(const char *app_id) {
 	DiscordEventHandlers handlers;
 	memset(&handlers, 0, sizeof(handlers));
+
 	handlers.ready = handleDiscordReady;
 	handlers.disconnected = handleDiscordDisconnected;
 	handlers.errored = handleDiscordError;
-	Discord_Initialize(app_id.c_str(), &handlers, 1, NULL);
+
+	Discord_Initialize(app_id, &handlers, 1, NULL);
 }
 
 void DiscordShit::UpdatePresence(Config conf) {
 	char buffer[256];
+
 	DiscordRichPresence discordPresence;
 	memset(&discordPresence, 0, sizeof(discordPresence));
-	discordPresence.state = conf.state.c_str();
-	discordPresence.largeImageKey = conf.largeImage.c_str();
-	discordPresence.smallImageKey = conf.smallImage.c_str();
+	discordPresence.state = conf.state;
+	discordPresence.largeImageKey = conf.largeImage;
+	discordPresence.smallImageKey = conf.smallImage;
 
 	if (conf.elapsedTimeEnabled || conf.remainingTime) {
 		int64_t currentTime = getCurrentTime(); 
 		
 		discordPresence.startTimestamp = currentTime;
-		if (conf.remainingTime) discordPresence.endTimestamp = currentTime + conf.remainingTime;
+		if (conf.remainingTime) {
+			discordPresence.endTimestamp = currentTime + conf.remainingTime;
+		}
 	}
 
-	sprintf(buffer, "%s", conf.details.c_str());
+	sprintf(buffer, "%s", conf.details);
 	discordPresence.details = buffer;
 	discordPresence.instance = 1;
 	Discord_UpdatePresence(&discordPresence);
 }
 
-void recreateConfig(const char* fileName) {
+void recreateConfig(const char *fileName) {
 	rapidjson::Document docTemp;
 	printf("failed to open config file, making a new one...\n");
 	FILE* file = fopen(fileName, "wb");
@@ -67,12 +76,12 @@ void recreateConfig(const char* fileName) {
 	docTemp.Accept(writer);
 
 	fclose(file);
-	printf("new config generated, reboot when configured\nsleeping for 20 seconds...");
 
+	printf("new config generated, reboot when configured\nsleeping for 20 seconds...");
 	bailOut();
 }
 
-Config readConfig(const char* fileName) { // TODO: definitely fix this mess
+Config readConfig(const char *fileName) { // TODO: definitely fix this mess
 	FILE* file = fopen(fileName, "rb");
 	rapidjson::Document doc;
 
@@ -84,7 +93,10 @@ Config readConfig(const char* fileName) { // TODO: definitely fix this mess
 	doc.ParseStream(readStream);
 	fclose(file);
 
-	if (!doc.IsObject()) { printf("malformed json! please fix before running again\nsleeping for 20 seconds..."); bailOut(); }
+	if (!doc.IsObject()) {
+		printf("malformed json! please fix before running again\nsleeping for 20 seconds...");
+		bailOut();
+	}
 
 	Config conf;
 	conf.app_id = doc["app_id"].GetString();
@@ -94,5 +106,6 @@ Config readConfig(const char* fileName) { // TODO: definitely fix this mess
 	conf.smallImage = doc["smallImage"].GetString();
 	conf.elapsedTimeEnabled = doc["elapsedTimeEnabled"].GetBool();
 	conf.remainingTime = doc["remainingTime"].GetInt64();
+
 	return conf;
 }
