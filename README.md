@@ -28,5 +28,5 @@ to build **custom-discord-rpc** you need:
 `meson.build` for **inih**: 
 ```
 project('inih', 'c')
-shared_library('inih', 'ini.c', 'ini.h')
+shared_library('inih', ['ini.c', 'ini.h'])
 ```
