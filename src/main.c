@@ -29,7 +29,7 @@ int main()
 			else if (MATCH(command, "quit") || MATCH(command, "exit")) {
 				Discord_Shutdown();
 				return 0;
-            }
+			}
 			else printf("unknown command\n");
 		}
 
