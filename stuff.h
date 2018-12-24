@@ -16,7 +16,7 @@ typedef enum { false, true } bool;
 
 
 typedef struct {
-	const char *app_id, *state, *details, *large_image, *small_image; /* check rich presence docs */
+	const char *app_id, *state, *details, *large_image_key, *large_image_text, *small_image_key, *small_image_text; /* check rich presence docs */
 	bool elapsed_time_enabled;
 	int remaining_time; /* max 86400 seconds (5 byte string) */
 } Config;

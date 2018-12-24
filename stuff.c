@@ -32,10 +32,14 @@ int handler(void* user, const char* section, const char* name, const char* value
 		conf->state = strndup(value, 128);
 	} else if (MATCH("config", "details", 7)) {
 		conf->details = strndup(value, 128);
-	} else if (MATCH("config", "large_image", 11)) {
-		conf->large_image = strndup(value, 32);
-	} else if (MATCH("config", "small_image", 11)) {
-		conf->small_image = strndup(value, 32);
+	} else if (MATCH("config", "large_image_key", 15)) {
+		conf->large_image_key = strndup(value, 32);
+	} else if (MATCH("config", "large_image_text", 16)) {
+		conf->large_image_text = strndup(value, 128);
+	} else if (MATCH("config", "small_image_key", 15)) {
+		conf->small_image_key = strndup(value, 32);
+	} else if (MATCH("config", "small_image_text", 16)) {
+		conf->small_image_text = strndup(value, 128);
 	} else if (MATCH("config", "elapsed_time_enabled", 20)) {
 		conf->elapsed_time_enabled = BOOL(strdup(value));
 	} else if (MATCH("config", "remaining_time", 14)) {
@@ -80,8 +84,14 @@ void update_presence(Config conf) {
 
 	discordPresence.state = conf.state;
 	discordPresence.details = conf.details;
-	discordPresence.largeImageKey = conf.large_image;
-	discordPresence.smallImageKey = conf.small_image;
+	discordPresence.largeImageKey = conf.large_image_key;
+	discordPresence.smallImageKey = conf.small_image_key;
+	if (conf.large_image_text[0] != 0) {
+		discordPresence.largeImageText = conf.large_image_text;
+	}
+	if (conf.small_image_text[0] != 0) {
+		discordPresence.smallImageText = conf.small_image_text;
+	}
 	discordPresence.instance = 0;
 
 
@@ -110,7 +120,7 @@ Config read_config() {
 }
 
 void recreate_config() {
-	const char *fallback_conf = "[config]\napp_id=000000000000000000\ndetails=details\nstate=state\nlarge_image=A\nsmall_image=B\nelapsed_time_enabled=true\nremaining_time=60\n";
+	const char *fallback_conf = "[config]\napp_id=000000000000000000\ndetails=details\nstate=state\nlarge_image_key=A\nlarge_image_text=text\nsmall_image_key=B\nsmall_image_text\nelapsed_time_enabled=true\nremaining_time=60\n";
 	printf("recreating...\n");
 
 	FILE *conf = fopen(file_name, "w");
