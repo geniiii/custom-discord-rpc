@@ -1,5 +1,5 @@
 # custom-discord-rpc
-configurable Discord rich presence written in **C**
+configurable Discord rich presence "client" written in **C**
 
 ## config format
 see `config.ini` as an example  
