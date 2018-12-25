@@ -1,17 +1,31 @@
-#include <stuff.h>
+#include "stuff.h"
 
 #define MATCH(command, s) strncmp(command, s, 16) == 0
 
 int main()
 {
 	while (1) {
-		Config conf = read_config();
+		// initialize defaults to prevent crashes
+		Config conf = { "000000000000000000", "", "", "", "", "", "", false, 0 };
+		conf = read_config(conf);
 
 		// initialize discord
 		init_discord(conf.app_id);
 		update_presence(conf);
 
-		printf("done...\n");
+		// jesus fucking christ
+		printf(
+			"app_id:%s\nstate:%s\ndetails:%s\nlarge_image_key:%s\nlarge_image_text:%s\nsmall_image_key:%s\nsmall_image_text:%s\nelapsed_time_enabled:%i\nremaining_time:%i\ndone...\n",
+			conf.app_id,
+			conf.state,
+			conf.details,
+			conf.large_image_key,
+			conf.large_image_text,
+			conf.small_image_key,
+			conf.small_image_text,
+			conf.elapsed_time_enabled,
+			conf.remaining_time
+		);
 
 		// command loop
 		while (1) {
@@ -24,7 +38,10 @@ int main()
 				command[i] = tolower(command[i]);
 			}
 
-			if (MATCH(command, "reload")) break;
+			if (MATCH(command, "reload")) {
+				Discord_Shutdown();
+				break;
+			}
 			else if (MATCH(command, "help")) printf("reload: reloads program\nquit/exit: exits program\n");
 			else if (MATCH(command, "quit") || MATCH(command, "exit")) {
 				Discord_Shutdown();

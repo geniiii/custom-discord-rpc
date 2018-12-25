@@ -1,6 +1,7 @@
-#pragma warning(disable:4996) // god damn it vc++
+// fuck you msvc
+#pragma warning(disable:4996)
 
-#include <stuff.h>
+#include "stuff.h"
 #include <ini.h>
 
 #ifdef _WIN32
@@ -8,6 +9,24 @@
 #else
 #include <unistd.h>
 #endif
+
+// fuck you msvc
+#ifdef _WIN32
+char *strndup(const char *str, size_t len)
+{
+	len = strnlen(str, len);
+	char *new = calloc(len + 1, 1);
+
+	if (new == NULL) {
+		return NULL;
+	}
+
+	new = strncpy(new, str, len);
+
+	return new;
+}
+#endif
+
 
 // config file_name
 const char *file_name = "config.ini";
@@ -41,7 +60,7 @@ int handler(void* user, const char* section, const char* name, const char* value
 	} else if (MATCH("config", "small_image_text", 16)) {
 		conf->small_image_text = strndup(value, 128);
 	} else if (MATCH("config", "elapsed_time_enabled", 20)) {
-		conf->elapsed_time_enabled = BOOL(strdup(value));
+		conf->elapsed_time_enabled = BOOL(strndup(value, 4));
 	} else if (MATCH("config", "remaining_time", 14)) {
 		conf->remaining_time = atoi(value);
 	} else {
@@ -109,22 +128,21 @@ void update_presence(Config conf) {
 
 
 /* config stuff */
-Config read_config() {
-	Config config;
-	if (ini_parse(file_name, handler, &config) < 0) {
-        printf("failed to load config!\n");
-        recreate_config();
-    }
+Config read_config(Config conf) {
+	if (ini_parse(file_name, handler, &conf) < 0) {
+		printf("failed to load config!\n");
+		recreate_config();
+	}
 
-	return config;
+	return conf;
 }
 
 void recreate_config() {
-	const char *fallback_conf = "[config]\napp_id=000000000000000000\ndetails=details\nstate=state\nlarge_image_key=A\nlarge_image_text=text\nsmall_image_key=B\nsmall_image_text\nelapsed_time_enabled=true\nremaining_time=60\n";
+	const char *fallback_conf = "[config]\napp_id=000000000000000000\ndetails=details\nstate=state\nlarge_image_key=A\nlarge_image_text=text\nsmall_image_key=B\nsmall_image_text=B\nelapsed_time_enabled=true\nremaining_time=60\n";
 	printf("recreating...\n");
 
 	FILE *conf = fopen(file_name, "w");
-	fprintf(conf, fallback_conf);
+	fputs(conf, fallback_conf);
 	fclose(conf);
 
 	printf("new config generated, reboot when configured\n");
@@ -132,11 +150,6 @@ void recreate_config() {
 	bail_out();
 }
 /* config stuff */
-
-// get current unix time
-unsigned long get_current_time() {
-	return (unsigned long)time(NULL);
-}
 
 // (gracefully) terminating the program in the event of a fatal error
 void bail_out() {
