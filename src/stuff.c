@@ -138,11 +138,12 @@ Config read_config(Config conf) {
 }
 
 void recreate_config() {
-	const char *fallback_conf = "[config]\napp_id=000000000000000000\ndetails=details\nstate=state\nlarge_image_key=A\nlarge_image_text=text\nsmall_image_key=B\nsmall_image_text=B\nelapsed_time_enabled=true\nremaining_time=60\n";
+	const char *fallback_conf = "[config]\napp_id=000000000000000000\ndetails=details\nstate=state\nlarge_image_key=A\nlarge_image_text=AA\nsmall_image_key=B\nsmall_image_text=BB\nelapsed_time_enabled=true\nremaining_time=60\n";
+	FILE *conf = fopen(file_name, "w");
+
 	printf("recreating...\n");
 
-	FILE *conf = fopen(file_name, "w");
-	fputs(conf, fallback_conf);
+	fputs(fallback_conf, conf);
 	fclose(conf);
 
 	printf("new config generated, reboot when configured\n");
